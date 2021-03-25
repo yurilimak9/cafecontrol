@@ -25,7 +25,7 @@ function is_passwd(string $password): bool
         return true;
     }
 
-    return (mb_strlen($password) >= CONF_PASSWD_MIN_LEN && mb_strlen($password) <= CONF_PASSWD_MAX_LEN ? true : false);
+    return (mb_strlen($password) >= CONF_PASSWD_MIN_LEN && mb_strlen($password) <= CONF_PASSWD_MAX_LEN);
 }
 
 /**
@@ -121,6 +121,7 @@ function str_limit_chars(string $string, int $limit, string $pointer = "..."): s
     return "{$chars}{$pointer}";
 }
 
+
 /**
  * ###############
  * ###   URL   ###
@@ -128,12 +129,22 @@ function str_limit_chars(string $string, int $limit, string $pointer = "..."): s
  */
 
 /**
- * @param string $path
+ * @param string|null $path
  * @return string
  */
-function url(string $path): string
+function url(string $path = null): string
 {
-    return CONF_URL_BASE . "/" . ($path[0] == "/" ? mb_substr($path, 1) : $path);
+    if (strpos($_SERVER["HTTP_HOST"], "localhost")) {
+        if ($path) {
+            return CONF_URL_TEST . "/" . ($path[0] == "/" ? mb_substr($path, 1) : $path);
+        }
+        return CONF_URL_TEST;
+    }
+
+    if ($path) {
+        return CONF_URL_BASE . "/" . ($path[0] == "/" ? mb_substr($path, 1) : $path);
+    }
+    return CONF_URL_BASE;
 }
 
 /**
@@ -151,6 +162,7 @@ function redirect(string $url): void
     header("Location: {$location}");
     exit;
 }
+
 
 /**
  * ################
