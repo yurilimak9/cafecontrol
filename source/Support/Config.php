@@ -10,7 +10,8 @@ define("CONF_DB_NAME", "fullstackphp");
 /**
  * PROJECT URLs
  */
-define("CONF_URL_BASE", "https://localhost/cafecontrol");
+define("CONF_URL_BASE", "https://cafecontrol.com.br");
+define("CONF_URL_TEST", "https://localhost/cafecontrol");
 define("CONF_URL_ADMIN", "/admin");
 
 /**
@@ -59,6 +60,8 @@ define("CONF_MESSAGE_ERROR", "error");
  */
 define("CONF_VIEW_PATH", __DIR__ . "/../../shared/views");
 define("CONF_VIEW_EXT", "php");
+define("CONF_VIEW_THEME", "cafecontrol");
+
 
 /**
  * UPLOAD
