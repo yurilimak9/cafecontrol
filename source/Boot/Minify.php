@@ -9,7 +9,7 @@ if (strpos(url(), "localhost")) {
     $minCSS->add(__DIR__ . "/../../shared/styles/boot.css");
 
     /** THEME CSS */
-    $cssDir = scandir(__DIR__ . "/../../themes/");
+    $cssDir = scandir(__DIR__ . "/../../themes/" . CONF_VIEW_THEME . "/assets/css");
     foreach ($cssDir as $css) {
         $cssFile = __DIR__ . "/../../themes/" . CONF_VIEW_THEME . "/assets/css/{$css}";
 
@@ -19,7 +19,7 @@ if (strpos(url(), "localhost")) {
     }
 
     /** Minify CSS */
-//    $minCSS->minify(__DIR__ . "/../../themes/");
+    $minCSS->minify(__DIR__ . "/../../themes/" . CONF_VIEW_THEME . "/assets/styles.css");
 
     /**
      * JS
@@ -29,7 +29,7 @@ if (strpos(url(), "localhost")) {
     $minJS->add(__DIR__ . "/../../shared/scripts/jquery-ui.js");
 
     /** THEME JS */
-    $jsDir = scandir(__DIR__ . "/../../themes/");
+    $jsDir = scandir(__DIR__ . "/../../themes/". CONF_VIEW_THEME . "/assets/js");
     foreach ($jsDir as $js) {
         $jsFile = __DIR__ . "/../../themes/" . CONF_VIEW_THEME . "/assets/js/{$js}";
 
@@ -39,5 +39,5 @@ if (strpos(url(), "localhost")) {
     }
 
     /** Minify JS */
-//    $minJS->minify(__DIR__ . "/../../themes/");
+    $minJS->minify(__DIR__ . "/../../themes/". CONF_VIEW_THEME . "/assets/scripts.js");
 }
