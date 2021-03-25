@@ -8,9 +8,7 @@
     <title><?= $title; ?></title>
 
     <link rel="icon" type="image/png" href="<?= theme("/assets/images/favicon.png"); ?>"/>
-    <link rel="stylesheet" href="<?= theme("/assets/css/styles.css"); ?>"/>
-    <link rel="stylesheet" href="<?= theme("/assets/css/boot.css"); ?>"/>
-    <link rel="stylesheet" href="<?= theme("/assets/css/style.css"); ?>"/>
+    <link rel="stylesheet" href="<?= theme("/assets/styles.css"); ?>" />
 </head>
 <body>
 
@@ -94,9 +92,7 @@
     </div>
 </footer>
 
-<script src="<?= theme("/assets/js/jquery.min.js"); ?>"></script>
-<script src="<?= theme("/assets/js/jquery-ui.js"); ?>"></script>
-<script src="<?= theme("/assets/js/scripts.js"); ?>"></script>
+<script src="<?= theme("/assets/scripts.js"); ?>"></script>
 
 </body>
 </html>
