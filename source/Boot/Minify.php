@@ -29,7 +29,7 @@ if (strpos(url(), "localhost")) {
     $minJS->add(__DIR__ . "/../../shared/scripts/jquery-ui.js");
 
     /** THEME JS */
-    $jsDir = scandir(__DIR__ . "/../../themes/" . CONF_VIEW_THEME . "/assets/js/");
+    $jsDir = scandir(__DIR__ . "/../../themes/". CONF_VIEW_THEME . "/assets/js");
     foreach ($jsDir as $js) {
         $jsFile = __DIR__ . "/../../themes/" . CONF_VIEW_THEME . "/assets/js/{$js}";
 
@@ -39,5 +39,5 @@ if (strpos(url(), "localhost")) {
     }
 
     /** Minify JS */
-    $minJS->minify(__DIR__ . "/../../themes/" . CONF_VIEW_THEME . "/assets/scripts.js");
+    $minJS->minify(__DIR__ . "/../../themes/". CONF_VIEW_THEME . "/assets/scripts.js");
 }
