@@ -31,6 +31,9 @@ define("CONF_SOCIAL_FACEBOOK_PAGE", "--------");
 define("CONF_SOCIAL_FACEBOOK_AUTHOR", "yurilimak9");
 define("CONF_SOCIAL_GOOGLE_PAGE", "000000000");
 define("CONF_SOCIAL_GOOGLE_AUTHOR", "000000000");
+define("CONF_SOCIAL_INSTAGRAM_PAGE", "---------");
+define("CONF_SOCIAL_YOUTUBE_PAGE", "--------");
+
 
 /**
  * DATES
