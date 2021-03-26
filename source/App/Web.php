@@ -100,6 +100,9 @@ class Web extends Controller
         ]);
     }
 
+    /**
+     * SITE LOGIN
+     */
     public function login(): void
     {
         $head = $this->seo->render(
@@ -114,6 +117,9 @@ class Web extends Controller
         ]);
     }
 
+    /**
+     * SITE FORGET
+     */
     public function forget(): void
     {
         $head = $this->seo->render(
@@ -128,6 +134,9 @@ class Web extends Controller
         ]);
     }
 
+    /**
+     * SITE REGISTER
+     */
     public function register(): void
     {
         $head = $this->seo->render(
@@ -138,6 +147,40 @@ class Web extends Controller
         );
 
         echo $this->view->render("auth-register", [
+            "head" => $head
+        ]);
+    }
+
+    /**
+     * SITE CONFIRM
+     */
+    public function confirm(): void
+    {
+        $head = $this->seo->render(
+            "Confirme seu Cadastro - " . CONF_SITE_NAME,
+            CONF_SITE_DESC,
+            url("/confima"),
+            theme("/assets/images/shared.jpg")
+        );
+
+        echo $this->view->render("optin-confirm", [
+            "head" => $head
+        ]);
+    }
+
+    /**
+     * SITE SUCCESS
+     */
+    public function success(): void
+    {
+        $head = $this->seo->render(
+            "Bem Vindo(a) ao " . CONF_SITE_NAME,
+            CONF_SITE_DESC,
+            url("/obrigado"),
+            theme("/assets/images/shared.jpg")
+        );
+
+        echo $this->view->render("optin-success", [
             "head" => $head
         ]);
     }
