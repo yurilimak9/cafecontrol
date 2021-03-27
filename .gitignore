@@ -6,5 +6,5 @@ vendor/
 .DS_Store
 storage/
 
-themes/cafecontrolback/assets/styles.css
-themes/cafecontrolback/assets/scripts.js
+themes/cafeweb/assets/scripts.js
+themes/cafeweb/assets/styles.css
