@@ -253,7 +253,7 @@ abstract class Model
      * @param string $value
      * @return bool
      */
-    protected function delete(string $key, string $value): bool
+    public function delete(string $key, string $value): bool
     {
         try {
             $stmt = Connect::getInstance()->prepare("DELETE FROM " . static::$entity . " WHERE {$key} = :key");
