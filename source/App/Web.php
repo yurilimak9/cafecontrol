@@ -6,6 +6,7 @@ namespace Source\App;
 
 use Source\Core\Controller;
 use Source\Models\Faq\Question;
+use Source\Models\Post;
 use Source\Support\Pager;
 
 /**
@@ -36,7 +37,12 @@ class Web extends Controller
 
         echo $this->view->render("home", [
             "head" => $head,
-            "video" => "lDZGl9Wdc7Y"
+            "video" => "lDZGl9Wdc7Y",
+            "blog" => (new Post())
+                ->find()
+                ->order("post_at DESC")
+                ->limit(6)
+                ->fetch(true)
         ]);
     }
 
