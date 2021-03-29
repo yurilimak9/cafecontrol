@@ -5,8 +5,10 @@ namespace Source\App;
 
 
 use Source\Core\Controller;
+use Source\Models\Auth;
 use Source\Models\Faq\Question;
 use Source\Models\Post;
+use Source\Models\User;
 use Source\Support\Pager;
 
 /**
@@ -211,9 +213,43 @@ class Web extends Controller
 
     /**
      * SITE REGISTER
+     * @param array|null $data
      */
-    public function register(): void
+    public function register(?array $data): void
     {
+        if (!empty($data["csrf"])) {
+            if (!csrf_verify($data)) {
+                $json["message"] = $this->message->error("Erro ao enviar, favor use o formulário")->render();
+                echo json_encode($json);
+                return;
+            }
+
+            if (in_array("", $data)) {
+                $json["message"] = $this->message->info("Informe seus dados para criar sua conta.")->render();
+                echo json_encode($json);
+                return;
+            }
+
+            $user = new User();
+            $user->bootstrap(
+              $data["first_name"],
+              $data["last_name"],
+              $data["email"],
+              $data["password"]
+            );
+
+            $auth = new Auth();
+
+            if ($auth->register($user)) {
+                $json["redirect"] = url("/confirma");
+            } else {
+                $json["message"] = $auth->message()->render();
+            }
+
+            echo json_encode($json);
+            return;
+        }
+
         $head = $this->seo->render(
             "Criar Conta - " . CONF_SITE_NAME,
             CONF_SITE_DESC,
@@ -238,16 +274,30 @@ class Web extends Controller
             theme("/assets/images/shared.jpg")
         );
 
-        echo $this->view->render("optin-confirm", [
-            "head" => $head
+        echo $this->view->render("optin", [
+            "head" => $head,
+            "data" => (object)[
+                "title" => "Falta pouco! Confirme seu cadastro.",
+                "desc" => "Enviamos um link de confirmação para seu e-mail. Acesse e siga as instruções para concluir seu cadastro e comece a controlar com o CaféControl",
+                "image" => theme("/assets/images/optin-confirm.jpg")
+            ]
         ]);
     }
 
     /**
      * SITE SUCCESS
+     * @param array $data
      */
-    public function success(): void
+    public function success(array $data): void
     {
+        $email = base64_decode($data["email"]);
+        $user = (new User())->findByEmail($email);
+
+        if ($user && $user->status != "confirmed") {
+            $user->status = "confirmed";
+            $user->save();
+        }
+
         $head = $this->seo->render(
             "Bem Vindo(a) ao " . CONF_SITE_NAME,
             CONF_SITE_DESC,
@@ -255,8 +305,15 @@ class Web extends Controller
             theme("/assets/images/shared.jpg")
         );
 
-        echo $this->view->render("optin-success", [
-            "head" => $head
+        echo $this->view->render("optin", [
+            "head" => $head,
+            "data" => (object)[
+                "title" => "Tudo pronto. Você já pode controlar :)",
+                "desc" => "Bem-vindo(a) ao seu controle de contas, vamos tomar um café?",
+                "image" => theme("/assets/images/optin-success.jpg"),
+                "link" => url("/entrar"),
+                "linkTitle" => "Fazer Login"
+            ]
         ]);
     }
 
