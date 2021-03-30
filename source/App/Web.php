@@ -170,10 +170,10 @@ class Web extends Controller
             "head" => $head,
             "post" => $post,
             "related" => (new Post())
-            ->find("category = :category AND id != :id", "category={$post->category}&id={$post->id}")
-            ->order("rand()")
-            ->limit(3)
-            ->fetch(true)
+                ->find("category = :category AND id != :id", "category={$post->category}&id={$post->id}")
+                ->order("rand()")
+                ->limit(3)
+                ->fetch(true)
         ]);
     }
 
@@ -266,6 +266,52 @@ class Web extends Controller
     }
 
     /**
+     * SITE FORGET RESET
+     * @param array $data
+     */
+    public function reset(array $data): void
+    {
+        if (!empty($data["csrf"])) {
+            if (!csrf_verify($data)) {
+                $json["message"] = $this->message->error("Erro ao enviar, favor use o formulário")->render();
+                echo json_encode($json);
+                return;
+            }
+
+            if (empty($data["password"]) || empty($data["password_re"])) {
+                $json["message"] = $this->message->info("Informe e repita a senha para continuar")->render();
+                echo json_encode($json);
+                return;
+            }
+
+            list($email, $code) = explode("|", $data["code"]);
+            $auth = new Auth();
+
+            if ($auth->reset($email, $code, $data["password"], $data["password_re"])) {
+                $this->message->success("Senha alterada com sucesso. Vamos controlar?")->flash();
+                $json["redirect"] = url("/entrar");
+            } else {
+                $json["message"] = $auth->message()->render();
+            }
+
+            echo json_encode($json);
+            return;
+        }
+
+        $head = $this->seo->render(
+            "Crie sua nova senha no " . CONF_SITE_NAME,
+            CONF_SITE_DESC,
+            url("/recuperar"),
+            theme("/assets/images/shared.jpg")
+        );
+
+        echo $this->view->render("auth-reset", [
+            "head" => $head,
+            "code" => $data["code"]
+        ]);
+    }
+
+    /**
      * SITE REGISTER
      * @param array|null $data
      */
@@ -286,10 +332,10 @@ class Web extends Controller
 
             $user = new User();
             $user->bootstrap(
-              $data["first_name"],
-              $data["last_name"],
-              $data["email"],
-              $data["password"]
+                $data["first_name"],
+                $data["last_name"],
+                $data["email"],
+                $data["password"]
             );
 
             $auth = new Auth();
