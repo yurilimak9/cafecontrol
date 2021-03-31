@@ -4,7 +4,10 @@
     </a>
     <header>
         <p class="meta">
-            <?= $post->category()->title; ?>
+            <a title="Artigos em <?= $post->category()->title; ?>"
+               href="<?= url("/blog/em/{$post->category()->title}"); ?>">
+                <?= $post->category()->title; ?>
+            </a>
             &bull; Por <?= "{$post->author()->first_name} {$post->author()->last_name}"; ?>
             &bull; <?= date_fmt_br($post->post_at); ?>
         </p>
@@ -12,7 +15,8 @@
             <a title="<?= $post->title; ?>" href="<?= url("/blog/{$post->uri}"); ?>"><?= $post->title; ?></a>
         </h2>
         <p>
-            <a title="<?= $post->title; ?>" href="<?= url("/blog/{$post->uri}"); ?>"><?= str_limit_chars($post->subtitle, 120); ?></a>
+            <a title="<?= $post->title; ?>"
+               href="<?= url("/blog/{$post->uri}"); ?>"><?= str_limit_chars($post->subtitle, 120); ?></a>
         </p>
     </header>
 </article>
