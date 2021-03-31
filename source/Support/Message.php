@@ -18,6 +18,12 @@ class Message
     /** @var string */
     private $type;
 
+    /** @var string */
+    private $before;
+
+    /** @var string */
+    private $after;
+
     /**
      * @return string
      */
@@ -31,7 +37,7 @@ class Message
      */
     public function getText(): ?string
     {
-        return $this->text;
+        return $this->before . $this->text . $this->after;
     }
 
     /**
@@ -40,6 +46,26 @@ class Message
     public function getType(): ?string
     {
         return $this->type;
+    }
+
+    /**
+     * @param string $text
+     * @return $this
+     */
+    public function before(string $text): Message
+    {
+        $this->before = $text;
+        return $this;
+    }
+
+    /**
+     * @param string $text
+     * @return $this
+     */
+    public function after(string $text): Message
+    {
+        $this->after = $text;
+        return $this;
     }
 
     /**
