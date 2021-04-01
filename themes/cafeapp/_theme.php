@@ -6,7 +6,7 @@
 
     <?= $head; ?>
 
-    <link rel="stylesheet" href="<?= theme("/assets/style.css", CONF_VIEW_APP); ?>"/>
+    <link rel="stylesheet" href="<?= theme("/assets/styles.css", CONF_VIEW_APP); ?>"/>
     <link rel="icon" type="image/png" href="<?= theme("/assets/images/favicon.png", CONF_VIEW_APP); ?>"/>
 </head>
 <body>

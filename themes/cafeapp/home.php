@@ -76,18 +76,20 @@
                     <h2 class="icon-graduation-cap">Aprenda:</h2>
                 </header>
                 <div class="app_widget_content">
-                    <?php foreach ($posts as $post): ?>
-                        <article class="app_widget_blog_article">
-                            <div class="thumb">
-                                <img alt="<?= $post->title; ?>" title="<?= $post->title; ?>"
-                                     src="<?= image($post->cover, 300); ?>"/>
-                            </div>
-                            <h3 class="title">
-                                <a target="_blank" href="<?= url("/blog/{$post->uri}"); ?>"
-                                   title="<?= $post->title; ?>"><?= str_limit_chars($post->title, 50); ?></a>
-                            </h3>
-                        </article>
-                    <?php endforeach; ?>
+                    <?php if (!empty($posts)): ?>
+                        <?php foreach ($posts as $post): ?>
+                            <article class="app_widget_blog_article">
+                                <div class="thumb">
+                                    <img alt="<?= $post->title; ?>" title="<?= $post->title; ?>"
+                                         src="<?= image($post->cover, 300); ?>"/>
+                                </div>
+                                <h3 class="title">
+                                    <a target="_blank" href="<?= url("/blog/{$post->uri}"); ?>"
+                                       title="<?= $post->title; ?>"><?= str_limit_chars($post->title, 50); ?></a>
+                                </h3>
+                            </article>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
                     <a target="_blank" href="<?= url("/blog"); ?>" title="Blog"
                        class="app_widget_more transition">Ver Mais...</a>
                 </div>

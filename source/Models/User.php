@@ -34,7 +34,8 @@ class User extends Model
         string $email,
         string $password,
         string $document = null
-    ): User {
+    ): User
+    {
         $this->first_name = $firstName;
         $this->last_name = $lastName;
         $this->email = $email;
@@ -52,6 +53,18 @@ class User extends Model
     {
         $find = $this->find("email = :email", "email={$email}", $columns);
         return $find->fetch();
+    }
+
+    /**
+     * @return string|null
+     */
+    public function photo(): ?string
+    {
+        if ($this->photo && file_exists(__DIR__ . "/../../" . CONF_UPLOAD_DIR . "/{$this->photo}")) {
+            return $this->photo;
+        }
+
+        return null;
     }
 
     /**
