@@ -5,6 +5,7 @@ namespace Source\App;
 use Source\Core\Controller;
 use Source\Models\Auth;
 use Source\Models\CafeApp\AppInvoice;
+use Source\Models\Post;
 use Source\Models\Report\Access;
 use Source\Models\Report\Online;
 use Source\Models\User;
@@ -91,12 +92,54 @@ class App extends Controller
             $chartData->income = implode(",", array_map("abs", $chartIncome));
             $chartData->expense = implode(",", array_map("abs", $chartExpense));
         }
-        
+
         /** End CHART */
+
+        /** Start INCOME & EXPENSE */
+
+        $income = (new AppInvoice())
+            ->find("user_id = :user AND type = 'income' AND status = 'unpaid' AND DATE(due_at) <= DATE(NOW()) + INTERVAL 1 MONTH", "user={$this->user->id}")
+            ->order("due_at")
+            ->fetch(true);
+
+        $expense = (new AppInvoice())
+            ->find("user_id = :user AND type = 'expense' AND status = 'unpaid' AND DATE(due_at) <= DATE(NOW()) + INTERVAL 1 MONTH", "user={$this->user->id}")
+            ->order("due_at")
+            ->fetch(true);
+
+        /** End INCOME & EXPENSE */
+
+        /** Start WALLET */
+
+        $wallet = (new AppInvoice())
+            ->find(
+                "user_id = :user AND status = :status",
+                "user={$this->user->id}&status=paid",
+                "
+                    (SELECT SUM(value) FROM app_invoices WHERE user_id = :user AND status = :status AND type = 'income') AS income,
+                    (SELECT SUM(value) FROM app_invoices WHERE user_id = :user AND status = :status AND type = 'expense') AS expense
+                "
+            )->fetch();
+
+        if ($wallet) {
+            $wallet->wallet = $wallet->income - $wallet->expense;
+        }
+
+        /** End WALLET */
+
+        /** Start POSTS */
+
+        $posts = (new Post())->find()->limit(3)->order("post_at DESC")->fetch(true);
+
+        /** End POSTS */
 
         echo $this->view->render("home", [
             "head" => $head,
-            "chart" => $chartData
+            "chart" => $chartData,
+            "income" => $income,
+            "expense" => $expense,
+            "wallet" => $wallet,
+            "posts" => $posts
         ]);
     }
 
