@@ -38,6 +38,8 @@ class App extends Controller
 
         (new Access())->report();
         (new Online())->report();
+
+        (new AppInvoice())->fixed($this->user, 3);
     }
 
     /**
@@ -230,7 +232,7 @@ class App extends Controller
             return;
         }
 
-        if (empty($data["enrollments"]) && $data["enrollments"] < 2 || $data["enrollments"] > 420) {
+        if (!empty($data["enrollments"]) && $data["enrollments"] < 2 || $data["enrollments"] > 420) {
             $json["message"] = $this->message->warning("Ooops {$this->user->first_name}! Para lançar o número de parcelas deve ser entre 2 e 420.")->render();
             echo json_encode($json);
             return;
