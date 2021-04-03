@@ -106,6 +106,7 @@ define("CONF_IMAGE_QUALITY", ["jpg" => 75, "png" => 5]);
 define("CONF_MAIL_HOST", "smtp-relay.sendinblue.com");
 define("CONF_MAIL_PORT", "587");
 define("CONF_MAIL_USER", "yurigoncalveslima33@gmail.com");
+define("CONF_MAIL_SUPPORT", "yurigoncalveslima33@yahoo.com");
 define("CONF_MAIL_PASS", "xsmtpsib-19bf9e8089094b21c029f90491109f1f7ee9fa65e7873360f71c38fe91ba550e-5Lt6JBMyCsAE4UYN");
 define("CONF_MAIL_SENDER", ["name" => "Yuri Gonçalves", "address" => "yurigoncalveslima33@gmail.com"]);
 
