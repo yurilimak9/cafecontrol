@@ -15,6 +15,8 @@ use Source\Models\Report\Online;
 use Source\Models\User;
 use Source\Support\Email;
 use Source\Support\Message;
+use Source\Support\Thumb;
+use Source\Support\Upload;
 
 /**
  * Class App
@@ -492,9 +494,56 @@ class App extends Controller
 
     /**
      * APP PROFILE (Perfil)
+     * @param array|null $data
      */
-    public function profile()
+    public function profile(?array $data): void
     {
+        if (!empty($data["update"])) {
+            list($day, $month, $year) = explode("/", $data["datebirth"]);
+            $user = (new User())->findById($this->user->id);
+            $user->first_name = $data["first_name"];
+            $user->last_name = $data["last_name"];
+            $user->genre = $data["genre"];
+            $user->datebirth = "{$year}-{$month}-{$day}";
+            $user->document = preg_replace("/[^0-9]/", "", $data["document"]);
+
+            if (!empty($_FILES["photo"])) {
+                $file = $_FILES["photo"];
+                $upload = new Upload();
+
+                if ($user->photo()) {
+                    (new Thumb())->flush("storage/{$user->photo}");
+                    $upload->remove("storage/{$user->photo}");
+                }
+
+                if (!$user->photo = $upload->image($file, "{$user->first_name} {$user->last_name} " . time(), 360)) {
+                    $json["message"] = $upload->message()->before("Ooops! ")->after(".")->render();
+                    echo json_encode($json);
+                    return;
+                }
+            }
+
+            if (!empty($data["password"])) {
+                if (empty($data["password_re"]) || $data["password"] != $data["password_re"]) {
+                    $json["message"] = $this->message->warning("Para alterar sua senha, informe e repita a nova senha.")->render();
+                    echo json_encode($json);
+                    return;
+                }
+
+                $user->password = $data["password"];
+            }
+
+            if (!$user->save()) {
+                $json["message"] = $user->message()->render();
+                echo json_encode($json);
+                return;
+            }
+
+            $json["message"] = $this->message->success("Pronto {$user->first_name}.  Seus dados foram atualizados com sucesso!")->render();
+            echo json_encode($json);
+            return;
+        }
+
         $head = $this->seo->render(
             "Meu perfil - " . CONF_SITE_NAME,
             CONF_SITE_DESC,
@@ -504,7 +553,11 @@ class App extends Controller
         );
 
         echo $this->view->render("profile", [
-            "head" => $head
+            "head" => $head,
+            "user" => $this->user,
+            "photo" => (
+                $this->user->photo ? image($this->user->photo, 360, 360) : theme("/assets/images/avatar.jpg", CONF_VIEW_APP)
+            )
         ]);
     }
 
