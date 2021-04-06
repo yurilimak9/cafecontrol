@@ -66,6 +66,7 @@ $route->get("/fatura/{invoice}", "App:invoice");
 $route->get("/perfil", "App:profile");
 $route->get("/sair", "App:logout");
 
+$route->post("/dash", "App:dash");
 $route->post("/launch", "App:launch");
 $route->post("/invoice/{invoice}", "App:invoice");
 $route->post("/remove/{invoice}", "App:remove");

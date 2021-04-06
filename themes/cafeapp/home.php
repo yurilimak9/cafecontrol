@@ -155,7 +155,7 @@
 
             $("[data-onpaid]").click(function (e) {
                 setTimeout(function () {
-                    $.post('<?= url("/app/dash");?>', function (callback) {
+                    $.post("<?= url("/app/dash"); ?>", function (callback) {
                         if (callback.chart) {
                             chart.update({
                                 xAxis: {
