@@ -473,6 +473,24 @@ class App extends Controller
     }
 
     /**
+     * @param array $data
+     */
+    public function remove(array $data): void
+    {
+        $invoice = (new AppInvoice())->find(
+            "user_id = :user AND id = :invoice", "user={$this->user->id}&invoice={$data["invoice"]}"
+        )->fetch();
+
+        if ($invoice) {
+            $invoice->destroy();
+        }
+
+        $this->message->success("Tudo certo {$this->user->first_name}. o lançamento foi removido com sucesso!")->flash();
+        $json["redirect"] = url("/app");
+        echo json_encode($json);
+    }
+
+    /**
      * APP PROFILE (Perfil)
      */
     public function profile()
