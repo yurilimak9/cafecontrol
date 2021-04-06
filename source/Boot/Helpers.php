@@ -210,6 +210,14 @@ function user(): ?\Source\Models\User
 }
 
 /**
+ * @return \Source\Core\Session
+ */
+function session(): \Source\Core\Session
+{
+    return new \Source\Core\Session();
+}
+
+/**
  * @param string|null $path
  * @param string $theme
  * @return string
