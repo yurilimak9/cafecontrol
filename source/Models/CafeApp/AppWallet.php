@@ -30,9 +30,19 @@ class AppWallet extends Model
         if (!$this->find("user_id = :user", "user={$user->id}")->count()) {
             $this->user_id = $user->id;
             $this->wallet = "Minha Carteira";
+            $this->free = true;
             $this->save();
         }
 
         return $this;
+    }
+
+    /**
+     * @return object
+     */
+    public function balance(): object
+    {
+        $balance = (new AppInvoice())->balanceWallet($this);
+        return $balance;
     }
 }
