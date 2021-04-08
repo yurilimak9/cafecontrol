@@ -5,6 +5,7 @@ namespace Source\Models\CafeApp;
 
 
 use Source\Core\Model;
+use Source\Core\Session;
 use Source\Models\User;
 
 /**
@@ -13,6 +14,9 @@ use Source\Models\User;
  */
 class AppInvoice extends Model
 {
+    /** @var int|null */
+    public $wallet;
+
     /**
      * AppInvoice constructor.
      */
@@ -23,6 +27,10 @@ class AppInvoice extends Model
             ["id"],
             ["user_id", "wallet_id", "category_id", "description", "type", "value", "due_at", "repeat_when"]
         );
+
+        if ((new Session())->has("walletfilter")) {
+            $this->wallet = "AND wallet_id = " . (new Session())->walletfilter;
+        }
     }
 
     /**
@@ -33,7 +41,7 @@ class AppInvoice extends Model
     public function fixed(User $user, int $afterMonths = 1): void
     {
         $fixed = $this->find(
-            "user_id = :user AND status = 'paid' AND type IN('fixed_income', 'fixed_expense')",
+            "user_id = :user AND status = 'paid' AND type IN('fixed_income', 'fixed_expense') {$this->wallet}",
             "user={$user->id}"
         )->fetch(true);
 
@@ -97,7 +105,7 @@ class AppInvoice extends Model
         $due_at = "AND (year(due_at) = '{$due_year}' AND month(due_at) = '{$due_month}')";
 
         $due = $this->find(
-            "user_id = :user AND type = :type {$status} {$category} {$due_at}", "user={$user->id}&type={$type}"
+            "user_id = :user AND type = :type {$status} {$category} {$due_at} {$this->wallet}", "user={$user->id}&type={$type}"
         )->order("day(due_at) ASC");
 
         if ($limit) {
@@ -131,8 +139,8 @@ class AppInvoice extends Model
             "user_id = :user AND status = :status",
             "user={$user->id}&status=paid",
             "
-                (SELECT SUM(value) FROM app_invoices WHERE user_id = :user AND status = :status AND type = 'income') AS income,
-                (SELECT SUM(value) FROM app_invoices WHERE user_id = :user AND status = :status AND type = 'expense') AS expense
+                (SELECT SUM(value) FROM app_invoices WHERE user_id = :user AND status = :status AND type = 'income' {$this->wallet}) AS income,
+                (SELECT SUM(value) FROM app_invoices WHERE user_id = :user AND status = :status AND type = 'expense' {$this->wallet}) AS expense
             "
         )->fetch();
 
@@ -146,9 +154,35 @@ class AppInvoice extends Model
         return $balance;
     }
 
+    /**
+     * @param AppWallet $wallet
+     * @return object
+     */
     public function balanceWallet(AppWallet $wallet): object
     {
+        $balance = new \stdClass();
+        $balance->income = 0;
+        $balance->expense = 0;
+        $balance->wallet = 0;
+        $balance->balance = "positive";
 
+        $find = $this->find(
+            "user_id = :user AND status = :status",
+            "user={$wallet->user_id}&status=paid",
+            "
+                (SELECT SUM(value) FROM app_invoices WHERE user_id = :user AND wallet_id = {$wallet->id} AND status = :status AND type = 'income') AS income,
+                (SELECT SUM(value) FROM app_invoices WHERE user_id = :user AND wallet_id = {$wallet->id} AND status = :status AND type = 'expense') AS expense,
+            "
+        )->fetch();
+
+        if ($find) {
+            $balance->income = abs($find->income);
+            $balance->expense = abs($find->expense);
+            $balance->wallet = $balance->income - $balance->expense;
+            $balance->balance = ($balance->wallet >= 1 ? "positive" : "negative");
+        }
+
+        return $balance;
     }
 
     /**
@@ -164,8 +198,8 @@ class AppInvoice extends Model
             "user_id = :user",
             "user={$user->id}&type={$type}&year={$year}&month={$month}",
             "
-                (SELECT SUM(value) FROM app_invoices WHERE user_id = :user AND type = :type AND year(due_at) = :year AND month(due_at) = :month AND status = 'paid') as paid,
-                (SELECT SUM(value) FROM app_invoices WHERE user_id = :user AND type = :type AND year(due_at) = :year AND month(due_at) = :month AND status = 'unpaid') as unpaid
+                (SELECT SUM(value) FROM app_invoices WHERE user_id = :user AND type = :type AND year(due_at) = :year AND month(due_at) = :month AND status = 'paid' {$this->wallet}) as paid,
+                (SELECT SUM(value) FROM app_invoices WHERE user_id = :user AND type = :type AND year(due_at) = :year AND month(due_at) = :month AND status = 'unpaid' {$this->wallet}) as unpaid
             "
         )->fetch();
 
@@ -203,10 +237,10 @@ class AppInvoice extends Model
                     month(due_at) AS due_month,
                     DATE_FORMAT(due_at, '%m/%Y') AS due_date,
                     (
-                        SELECT SUM(value) FROM app_invoices WHERE user_id = :user AND status = :status AND type = 'income' AND year(due_at) = due_year AND month(due_at) = due_month
+                        SELECT SUM(value) FROM app_invoices WHERE user_id = :user AND status = :status AND type = 'income' AND year(due_at) = due_year AND month(due_at) = due_month {$this->wallet}
                     ) AS income,
                     (
-                        SELECT SUM(value) FROM app_invoices WHERE user_id = :user AND status = :status AND type = 'expense' AND year(due_at) = due_year AND month(due_at) = due_month
+                        SELECT SUM(value) FROM app_invoices WHERE user_id = :user AND status = :status AND type = 'expense' AND year(due_at) = due_year AND month(due_at) = due_month {$this->wallet}
                     ) AS expense
                 "
             )->limit(5)->fetch(true);
