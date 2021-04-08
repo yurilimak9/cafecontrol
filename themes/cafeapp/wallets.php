@@ -30,7 +30,7 @@
         <article class="wallet radius <?= ($balance->balance == "positive" ? "gradient-green" : "gradient-red"); ?>">
             <span class="wallet_remove wallet_action icon-times-circle icon-notext"></span>
             <h2 class="icon-briefcase icon-notext"></h2>
-            <input data-walletedit="<?= url("/app/wallets/{$wallet->id}"); ?>" type="text" name="wallet"
+            <input data-walletedit="<?= url("/app/wallets/{$wallet->id}"); ?>" data-wallet="<?= $wallet->id; ?>" type="text" name="wallet"
                    value="<?= $wallet->wallet; ?>">
             <p class="wallet_balance">R$ <?= str_price($balance->wallet); ?></p>
             <p class="wallet_income">Receitas: R$ <?= str_price($balance->income); ?></p>

@@ -268,9 +268,10 @@ $(function () {
      * WALLET EDIT
      */
     $("[data-walletedit]").change(function () {
-        var wallet = $(this).val();
+        var walletEdit = $(this).val();
+        var wallet = $(this).data("wallet");
         var endpoint = $(this).data("walletedit");
-        $.post(endpoint, {wallet_edit: wallet}, "json");
+        $.post(endpoint, {wallet: wallet, wallet_edit: walletEdit}, "json");
     });
 
     /*
