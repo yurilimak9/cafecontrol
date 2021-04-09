@@ -55,15 +55,6 @@ class App extends Controller
                 (new Auth())->register($this->user);
             }
         }
-
-//        $card = new AppCreditCard();
-//        $card->creditCard(
-//            $this->user,
-//            "5466 9614 4924 2915",
-//            "Yuri Lima",
-//            "02/2022",
-//            "933"
-//        );
     }
 
     /**
