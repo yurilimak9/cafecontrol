@@ -25,7 +25,7 @@ class AppCreditCard extends Model
     /** @var array */
     private $build;
 
-    /** @var string */
+    /** @var object|null */
     private $callback;
 
     /**
@@ -51,7 +51,7 @@ class AppCreditCard extends Model
      * @param string $cvv
      * @return AppCreditCard
      */
-    public function creditCard(User $user, string $number, string $name, string $expDate, string $cvv): AppCreditCard
+    public function creditCard(User $user, string $number, string $name, string $expDate, string $cvv): ?AppCreditCard
     {
         $this->build = [
             "card_number" => $this->clear($number),
@@ -59,11 +59,57 @@ class AppCreditCard extends Model
             "card_expiration_date" => $this->clear($expDate),
             "card_cvv" => $this->clear($cvv)
         ];
+        var_dump($this->build);
 
         $this->endpoint = "/1/cards";
         $this->post();
 
-        var_dump($this->callback);
+        if (empty($this->callback->id) || !$this->callback->valid) {
+            $this->message->warning("Não foi possível validar o cartão");
+            return null;
+        }
+
+        $card = $this->find("user_id = :user AND hash = :hash", "user={$user->id}&hash={$this->callback->id}")->fetch();
+        if ($card) {
+            $card->cvv = $this->clear($this->callback->cvv);
+            $card->save();
+
+            return $card;
+        }
+
+        $this->user_id = $user->id;
+        $this->brand = $this->callback->brand;
+        $this->last_digits = $this->callback->last_digits;
+        $this->cvv = $this->clear($cvv);
+        $this->hash = $this->callback->id;
+        $this->save();
+
+        return $this;
+    }
+
+    /**
+     * @param string $amount
+     * @return $this|null
+     */
+    public function transaction(string $amount): ?AppCreditCard
+    {
+        $this->build = [
+            "payment_method" => "credit_card",
+            "card_id" => $this->hash,
+            "amount" => $this->clear($amount)
+        ];
+
+        $this->endpoint = "/1/transactions";
+
+        $this->post();
+
+        if (empty($this->callback->status) || $this->callback->status != "paid") {
+            $this->message->warning("Pagamento recusado pela operadora");
+
+            return null;
+        }
+
+        return $this;
     }
 
     /**
@@ -75,6 +121,9 @@ class AppCreditCard extends Model
         return preg_replace("/[^0-9]/", "", $number);
     }
 
+    /**
+     *
+     */
     private function post(): void
     {
         $url = $this->apiUrl . $this->endpoint;
@@ -89,5 +138,13 @@ class AppCreditCard extends Model
         $this->callback = json_decode(curl_exec($ch));
 
         curl_close($ch);
+    }
+
+    /**
+     * @return object|null
+     */
+    public function callback(): ?object
+    {
+        return $this->callback;
     }
 }
