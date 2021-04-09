@@ -7,6 +7,7 @@ use Source\Core\Session;
 use Source\Core\View;
 use Source\Models\Auth;
 use Source\Models\CafeApp\AppCategory;
+use Source\Models\CafeApp\AppCreditCard;
 use Source\Models\CafeApp\AppInvoice;
 use Source\Models\CafeApp\AppWallet;
 use Source\Models\Post;
@@ -54,6 +55,15 @@ class App extends Controller
                 (new Auth())->register($this->user);
             }
         }
+
+//        $card = new AppCreditCard();
+//        $card->creditCard(
+//            $this->user,
+//            "5466 9614 4924 2915",
+//            "Yuri Lima",
+//            "02/2022",
+//            "933"
+//        );
     }
 
     /**
