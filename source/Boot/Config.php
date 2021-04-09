@@ -115,3 +115,12 @@ define("CONF_MAIL_OPTION_HTML", true);
 define("CONF_MAIL_OPTION_AUTH", true);
 define("CONF_MAIL_OPTION_SECURE", "tls");
 define("CONF_MAIL_OPTION_CHARSET", "utf-8");
+
+
+/**
+ * PAGAR.ME
+ */
+define("CONF_PAGARME_MODE", "test");
+define("CONF_PAGARME_LIVE", "");
+define("CONF_PAGARME_TEST", "ak_test_YcE3XFjy85Yds2lFRoa70QlSMmAdC3");
+define("CONF_PAGARME_BACK", CONF_URL_BASE . "/pay/callback");
