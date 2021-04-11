@@ -59,7 +59,6 @@ class AppCreditCard extends Model
             "card_expiration_date" => $this->clear($expDate),
             "card_cvv" => $this->clear($cvv)
         ];
-        var_dump($this->build);
 
         $this->endpoint = "/1/cards";
         $this->post();

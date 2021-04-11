@@ -107,7 +107,7 @@ $(function () {
      */
     $(".mask-money").mask('000.000.000.000.000,00', {reverse: true, placeholder: "0,00"});
     $(".mask-date").mask('00/00/0000', {reverse: true});
-    $(".mask-month").mask('00/0000', {reverse: true});
+    $(".mask-month").mask('00/00', {reverse: true});
     $(".mask-doc").mask('000.000.000-00', {reverse: true});
     $(".mask-card").mask('0000  0000  0000  0000', {reverse: true});
 

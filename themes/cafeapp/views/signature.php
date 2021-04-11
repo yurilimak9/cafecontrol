@@ -31,7 +31,7 @@
         <label>
             <span class="field">Data de expiração:</span>
             <input class="radius mask-month" name="card_expiration_date" type="text" required
-                   placeholder="mm/yyyy"/>
+                   placeholder="mm/yy"/>
         </label>
 
         <label>
