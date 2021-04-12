@@ -297,6 +297,21 @@ class App extends Controller
     {
         /** Create */
         if (!empty($data["wallet"]) && !empty($data["wallet_name"])) {
+
+            /** PREMIUM RESOURCE */
+            $subscribe = (new AppSubscription())->find(
+                "user_id = :user AND status != :status",
+                "user={$this->user->id}&status=canceled"
+            );
+
+            if (!$subscribe->count()) {
+                $this->message->error("Desculpe {$this->user->first_name}, para criar novas carteiras é preciso ser PRO. Confira abaixo...")->flash();
+                $json["redirect"] = url("/app/assinatura");
+                echo json_encode($json);
+                return;
+            }
+
+
             $wallet = new AppWallet();
             $wallet->user_id = $this->user->id;
             $wallet->wallet = filter_var($data["wallet_name"], FILTER_SANITIZE_STRIPPED);
@@ -364,6 +379,30 @@ class App extends Controller
     {
         if (request_limit("applaunch", 20)) {
             $json["message"] = $this->message->warning("Foi muito rápido {$this->user->first_name}! Por favor, aguarde 5 minutos para novos lançamentos.")->render();
+            echo json_encode($json);
+            return;
+        }
+
+        $wallet = (new AppWallet())->find(
+            "user_id = :user AND id = :id",
+            "user={$this->user->id}&id={$data["wallet"]}"
+        )->fetch();
+
+        if (!$wallet) {
+            $json["message"] = $this->message->warning("Ooops! Você tentou lançar em uma carteira que não existe ou está ídisponível no momento.")->render();
+            echo json_encode($json);
+            return;
+        }
+
+        /** PREMIUM RESOURCE */
+        $subscribe = (new AppSubscription())->find(
+            "user_id = :user AND status != :status",
+            "user={$this->user->id}&status=canceled"
+        );
+
+        if (!$wallet->free && !$subscribe->count()) {
+            $this->message->error("Sua carteira {$wallet->wallet} é PRO {$this->user->first_name}. Para controlá-la é preciso ser PRO. Assine abaixo...")->flash();
+            $json["redirect"] = url("/app/assinatura");
             echo json_encode($json);
             return;
         }
