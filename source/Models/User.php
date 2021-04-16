@@ -56,6 +56,14 @@ class User extends Model
     }
 
     /**
+     * @return string
+     */
+    public function fullName(): string
+    {
+        return "{$this->first_name} {$this->last_name}";
+    }
+
+    /**
      * @return string|null
      */
     public function photo(): ?string
