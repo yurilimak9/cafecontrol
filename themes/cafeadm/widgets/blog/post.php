@@ -1,7 +1,7 @@
 <?php $v->layout("_admin"); ?>
 <?php $v->insert("widgets/blog/sidebar.php"); ?>
 
-<div class="mce_upload" style="z-index: 998">
+<div class="mce_upload" style="z-index: 997">
     <div class="mce_upload_box">
         <form class="app_form" action="<?= url("/admin/blog/post"); ?>" method="post" enctype="multipart/form-data">
             <input type="hidden" name="upload" value="true"/>
@@ -64,7 +64,7 @@
                         <span class="legend">*Autor:</span>
                         <select name="author" required>
                             <?php foreach ($authors as $author): ?>
-                                <option value="<?= $author->id; ?>"><?= $author->full_name(); ?></option>
+                                <option value="<?= $author->id; ?>"><?= $author->fullName(); ?></option>
                             <?php endforeach; ?>
                         </select>
                     </label>
@@ -158,7 +158,7 @@
                                 };
                                 ?>
                                 <option <?= $select($post->author); ?>
-                                        value="<?= $author->id; ?>"><?= $post->author()->full_name(); ?></option>
+                                        value="<?= $author->id; ?>"><?= $post->author()->fullName(); ?></option>
                             <?php endforeach; ?>
                         </select>
                     </label>
