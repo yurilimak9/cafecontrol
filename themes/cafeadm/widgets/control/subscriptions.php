@@ -31,7 +31,7 @@
                         ?>
                         <article class="radius">
                             <div class="cover" style="background-image: url(<?= $userPhoto; ?>);"></div>
-                            <h4><?= $subscription->user()->full_name() ?></h4>
+                            <h4><?= $subscription->user()->fullName() ?></h4>
                             <p class="email"><?= $subscription->user()->email; ?></p>
                             <p class="info">
                                 Assina o plano <?= $subscription->plan()->name; ?><br>
