@@ -73,6 +73,10 @@ class Control extends Admin
                     SELECT id FROM users WHERE MATCH(first_name, last_name, email) AGAINST(:s)
                 )", "s={$search}"
             );
+            if (!$subscriptions->count()) {
+                $this->message->info("Sua pesquisa não retornou resultados")->flash();
+                redirect("/admin/control/subscriptions");
+            }
         }
 
         $all = ($search ?? "all");
