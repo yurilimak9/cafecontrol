@@ -45,7 +45,7 @@
                         <article>
                             <h4>[<?= date_fmt($onlineNow->created_at, "H\hm"); ?> - <?= date_fmt($onlineNow->updated_at,
                                     "H\hm"); ?>]
-                                <?= ($onlineNow->user ? $onlineNow->user()->full_name() : "Guest User"); ?></h4>
+                                <?= ($onlineNow->user ? $onlineNow->user()->fullName() : "Guest User"); ?></h4>
                             <p><?= $onlineNow->pages; ?> páginas vistas</p>
                             <p class="radius icon-link"><a target="_blank"
                                                            href="<?= url("/{$onlineNow->url}"); ?>"><b><?= strtolower(CONF_SITE_NAME); ?></b><?= $onlineNow->url; ?>
