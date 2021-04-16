@@ -41,7 +41,7 @@
                     <?php foreach ($subscriptions as $subscription): ?>
                         <article class="subscriber">
                             <h5><?= date_fmt($subscription->created_at, "d.m.y \- H\hm"); ?>
-                                - <?= $subscription->user()->full_name(); ?></h5>
+                                - <?= $subscription->user()->fullName(); ?></h5>
                             <p><?= $subscription->plan()->name; ?> -
                                 R$ <?= str_price($subscription->plan()->price) . "/{$subscription->plan()->period_str}"; ?></p>
                             <p><?= ($subscription->status == "active" ? "Ativa" : "Inativa"); ?></p>
