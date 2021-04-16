@@ -35,7 +35,7 @@
                             <div class="info">
                                 <p class="icon-clock-o"><?= date_fmt($post->post_at, "d.m.y \à\s H\hi"); ?></p>
                                 <p class="icon-bookmark"><?= $post->category()->title; ?></p>
-                                <p class="icon-user"><?= $post->author()->full_name(); ?></p>
+                                <p class="icon-user"><?= $post->author()->fullName(); ?></p>
                                 <p class="icon-bar-chart"><?= $post->views; ?></p>
                                 <p class="icon-pencil-square-o"><?= ($post->status == "post" ? "Artigo" : ($post->status == "draft" ? "Rascunho" : "Lixo")); ?></p>
                             </div>
