@@ -4,7 +4,7 @@
 <section class="dash_content_app">
     <header class="dash_content_app_header">
         <h2 class="icon-star-o">Assinatura #<?= str_pad($subscription->id, 3, 0, 0); ?>
-            de <?= $subscription->user()->full_name(); ?></h2>
+            de <?= $subscription->user()->fullName(); ?></h2>
     </header>
 
     <div class="dash_content_app_box">
