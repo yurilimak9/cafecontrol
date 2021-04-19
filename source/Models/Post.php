@@ -70,4 +70,17 @@ class Post extends Model
 
         return null;
     }
+
+    /**
+     * @return bool
+     */
+    public function save(): bool
+    {
+        $checkUri = $this->find("uri = :uri AND id != :id", "uri={$this->uri}&id={$this->id}");
+        if ($checkUri->count()) {
+            $this->uri = "{$this->uri}-{$this->lastId()}";
+        }
+
+        return parent::save();
+    }
 }
