@@ -250,7 +250,7 @@ class Blog extends Admin
         $pager->pager($categories->count(), 6, (!empty($data["page"]) ? $data["page"] : 1));
 
         $head = $this->seo->render(
-            ($postEdit->title ?? "Novo Artigo") . " | " . CONF_SITE_NAME,
+            "Categorias | " . CONF_SITE_NAME,
             CONF_SITE_DESC,
             url("/admin"),
             theme("/assets/images/image.jpg", CONF_VIEW_ADMIN),
@@ -389,7 +389,7 @@ class Blog extends Admin
         }
 
         $head = $this->seo->render(
-            "Categoria | " . CONF_SITE_NAME,
+            ($categoryEdit->title ?? "Nova Categoria"). " | " . CONF_SITE_NAME,
             CONF_SITE_DESC,
             url("/admin"),
             theme("/assets/images/image.jpg", CONF_VIEW_ADMIN),
