@@ -8,6 +8,7 @@ use Source\Models\Category;
 use Source\Models\Post;
 use Source\Models\User;
 use Source\Support\Pager;
+use Source\Support\Thumb;
 use Source\Support\Upload;
 
 /**
@@ -95,8 +96,124 @@ class Blog extends Admin
         }
 
         /** Create */
+        if (!empty($data["action"]) && $data["action"] == "create") {
+            $content = $data["content"];
+            $data = filter_var_array($data, FILTER_SANITIZE_STRIPPED);
+
+            $postCreate = new Post();
+            $postCreate->author = $data["author"];
+            $postCreate->category = $data["category"];
+            $postCreate->title = $data["title"];
+            $postCreate->uri = str_slug($postCreate->title);
+            $postCreate->subtitle = $data["subtitle"];
+            $postCreate->content = str_replace(["{title}"], [$postCreate->title], $content);
+            $postCreate->video = $data["video"];
+            $postCreate->status = $data["status"];
+            $postCreate->post_at = date_fmt_back($data["post_at"]);
+
+            /** Upload cover */
+            if (!empty($_FILES["cover"])) {
+                $files = $_FILES["cover"];
+                $upload = new Upload();
+                $image = $upload->image($files, $postCreate->title . time());
+
+                if (!$image) {
+                    $json["message"] = $upload->message()->render();
+                    echo json_encode($json);
+                    return;
+                }
+
+                $postCreate->cover = $image;
+            }
+
+            if (!$postCreate->save()) {
+                $json["message"] = $postCreate->message()->render();
+                echo json_encode($json);
+                return;
+            }
+
+            $this->message->success("Post publicado com sucesso...")->flash();
+            echo json_encode(["redirect" => url("/admin/blog/post/{$postCreate->id}")]);
+            return;
+        }
+
         /** Update */
+        if (!empty($data["action"]) && $data["action"] == "update") {
+            $content = $data["content"];
+            $data = filter_var_array($data, FILTER_SANITIZE_STRIPPED);
+
+            $postEdit = (new Post())->findById($data["post_id"]);
+            if (!$postEdit) {
+                $this->message->error("Você tentou atualizar um post que não existe ou foi removido")->flash();
+                echo json_encode(["redirect" => url("/admin/blog/home")]);
+                return;
+            }
+
+            $postEdit->author = $data["author"];
+            $postEdit->category = $data["category"];
+            $postEdit->title = $data["title"];
+            $postEdit->uri = str_slug($postEdit->title);
+            $postEdit->subtitle = $data["subtitle"];
+            $postEdit->content = str_replace(["{title}"], [$postEdit->title], $content);
+            $postEdit->video = $data["video"];
+            $postEdit->status = $data["status"];
+            $postEdit->post_at = date_fmt_back($data["post_at"]);
+
+            /** Upload cover */
+            if (!empty($_FILES["cover"])) {
+
+                if ($postEdit->cover && file_exists(__DIR__ . "/../../../" . CONF_UPLOAD_DIR . "/{$postEdit->cover}")) {
+                    unlink(__DIR__ . "/../../../" . CONF_UPLOAD_DIR . "/{$postEdit->cover}");
+                    (new Thumb())->flush($postEdit->cover);
+                }
+
+                $files = $_FILES["cover"];
+                $upload = new Upload();
+                $image = $upload->image($files, $postEdit->title . time());
+
+                if (!$image) {
+                    $json["message"] = $upload->message()->render();
+                    echo json_encode($json);
+                    return;
+                }
+
+                $postEdit->cover = $image;
+            }
+
+            if (!$postEdit->save()) {
+                $json["message"] = $postEdit->message()->render();
+                echo json_encode($json);
+                return;
+            }
+
+            $this->message->success("Post atualizado com sucesso...")->flash();
+            echo json_encode(["reload" => true]);
+            return;
+        }
+
         /** Delete */
+        if (!empty($data["action"]) && $data["action"] == "delete") {
+            $data = filter_var_array($data, FILTER_SANITIZE_STRIPPED);
+
+            $postDelete = (new Post())->findById($data["post_id"]);
+
+            if (!$postDelete) {
+                $this->message->error("Você tentou excluir um post que não existe ou já foi removido")->flash();
+                echo json_encode(["reload" => true]);
+                return;
+            }
+
+            if ($postDelete->cover && file_exists(__DIR__ . "/../../../" . CONF_UPLOAD_DIR . "/{$postDelete->cover}")) {
+                unlink(__DIR__ . "/../../../" . CONF_UPLOAD_DIR . "/{$postDelete->cover}");
+                (new Thumb())->flush($postDelete->cover);
+            }
+
+            $postDelete->destroy();
+            $this->message->success("O post foi excluído com sucesso...")->flash();
+
+            echo json_encode(["reload" => true]);
+            return;
+        }
 
         $postEdit = null;
         if (!empty($data["post_id"])) {
@@ -106,7 +223,7 @@ class Blog extends Admin
         }
 
         $head = $this->seo->render(
-            ($postEdit ?? "Novo Artigo") . " | " . CONF_SITE_NAME,
+            ($postEdit->title ?? "Novo Artigo") . " | " . CONF_SITE_NAME,
             CONF_SITE_DESC,
             url("/admin"),
             theme("/assets/images/image.jpg", CONF_VIEW_ADMIN),
