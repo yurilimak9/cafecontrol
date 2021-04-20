@@ -25,7 +25,7 @@
                             <p class="level icon-user">USUÁRIO</p>
                         <?php endif; ?>
 
-                        <h4><?= $user->full_name(); ?></h4>
+                        <h4><?= $user->fullName(); ?></h4>
                         <div class="info">
                             <p><?= $user->email; ?></p>
                             <p>Desde <?= date_fmt($user->created_at, "d/m/y \à\s H\hi"); ?></p>
