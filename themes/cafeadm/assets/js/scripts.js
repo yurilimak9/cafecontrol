@@ -23,14 +23,60 @@ $(function () {
 
     //NOTIFICATION CENTER
 
+    function notificationsCount() {
+        var center = $(".notification_center_open");
+        $.post(center.data("count"), function (response) {
+            if (response.count) {
+                center.html(response.count);
+            } else {
+                center.html("0");
+            }
+        }, "json")
+    }
+
+    function notificationHtml(link, image, notify, date) {
+
+        return '<div data-notificationlink="' + link + '" class="notification_center_item radius transition <?= $readClass; ?>"> \n' +
+            '    <div class="image">\n' +
+            '        <img class="rounded" src="' + image + '"/>\n' +
+            '    </div>\n' +
+            '    <div class="info">\n' +
+            '        <p class="title">' + notify + '</p>\n' +
+            '        <p class="time icon-clock-o">' + date + '</p>\n' +
+            '    </div>\n' +
+            '</div>';
+    }
+
+    notificationsCount();
+
+    setInterval(function () {
+        notificationsCount();
+    }, 1000 * 50);
+
     $(".notification_center_open").click(function (e) {
         e.preventDefault();
 
-        var center = $(".notification_center");
+        const notify = $(this).data("notify");
+        const center = $(".notification_center");
 
-        center.css("display", "block").animate({right: 0}, 200, function (e) {
-            $("body").css("overflow", "hidden");
-        });
+        $.post(notify, function (response) {
+            if (response.message) {
+                ajaxMessage(response.message, ajaxResponseBaseTime);
+            }
+
+            let centerHtml = "";
+            if (response.notifications) {
+                $.each(response.notifications, function (e, notify) {
+                    centerHtml += notificationHtml(notify.link, notify.image, notify.title, notify.created_at)
+                });
+
+                center.html(centerHtml);
+
+                center.css("display", "block").animate({right: 0}, 200, function (e) {
+                    $("body").css("overflow", "hidden");
+                });
+            }
+        }, "json");
 
         center.one("mouseleave", function () {
             $(this).animate({right: '-320'}, 200, function (e) {
@@ -38,6 +84,12 @@ $(function () {
                 $(this).css("display", "none");
             });
         });
+
+        notificationsCount();
+    });
+
+    $(".notification_center").on("click", "[data-notificationlink]", function () {
+        window.location.href = $(this).data("notificationlink");
     });
 
     //DATA SET

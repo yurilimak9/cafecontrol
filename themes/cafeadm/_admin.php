@@ -61,7 +61,9 @@
                 <div class="dash_content_box">
                     <h1 class="icon-cog transition"><a href="<?= url("/admin/dash"); ?>">Café<b>Admin</b></a></h1>
                     <div class="dash_userbar_box_bar">
-                        <span class="notification_center_open icon-bell">06</span>
+                        <span class="notification_center_open icon-bell"
+                              data-count="<?= url("/admin/notifications/count"); ?>"
+                              data-notify="<?= url("/admin/notifications/list"); ?>">0</span>
                         <span class="no_mobile icon-clock-o"><?= date("d/m H\hi"); ?></span>
                         <a class="no_mobile icon-sign-out" title="Sair" href="<?= url("/admin/logoff"); ?>">Sair</a>
                         <span class="icon-menu icon-notext mobile_menu transition"></span>
@@ -70,21 +72,7 @@
             </div>
 
             <div class="notification_center">
-                <?php
-                for ($notify = 0; $notify < 7; $notify++):
-                    $readClass = ($notify < 3 ? "" : "read");
-                    ?>
-                    <div data-link="https://www.upinside.com.br"
-                         class="notification_center_item radius transition <?= $readClass; ?>">
-                        <div class="image">
-                            <img class="rounded" src="<?= theme("/assets/images/notify.jpg", CONF_VIEW_ADMIN); ?>"/>
-                        </div>
-                        <div class="info">
-                            <p class="title">Robson V. Leite assinou o plano PRO por R$ 5,00/mês</p>
-                            <p class="time icon-clock-o">22/07/19 - 14hs 22min</p>
-                        </div>
-                    </div>
-                <?php endfor; ?>
+
             </div>
 
         </div>
