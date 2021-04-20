@@ -31,7 +31,7 @@ class Users extends Admin
     {
         /** Search Redirect */
         if (!empty($data["s"])) {
-            $s = filter_var($data["s"], FILTER_SANITIZE_STRIPPED);
+            $s = str_search($data["s"]);
             echo json_encode(["redirect" => url("/admin/users/home/{$s}/1")]);
             return;
         }
@@ -39,8 +39,8 @@ class Users extends Admin
         $search = null;
         $users = (new User())->find();
 
-        if (!empty($data["search"]) && $data["search"] != "all") {
-            $search = filter_var($data["search"], FILTER_SANITIZE_STRIPPED);
+        if (!empty($data["search"]) && str_search($data["search"]) != "all") {
+            $search = str_search($data["search"]);
             $users = (new User())->find("MATCH(first_name, last_name, email) AGAINST(:s)", "s={$search}");
 
             if (!$users->count()) {

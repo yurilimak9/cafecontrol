@@ -148,17 +148,17 @@ class Web extends Controller
     public function blogSearch(array $data): void
     {
         if (!empty($data["s"])) {
-            $search = filter_var($data["s"], FILTER_SANITIZE_STRIPPED);
+            $search = str_search($data["s"]);
             echo json_encode(["redirect" => url("/blog/buscar/{$search}/1")]);
             return;
         }
 
-        if (empty($data["terms"])) {
+        $search = str_search($data["search"]);
+        $page = (filter_var($data["page"], FILTER_VALIDATE_INT) >= 1 ? $data["page"] : 1);
+
+        if ($search == "all") {
             redirect("/blog");
         }
-
-        $search = filter_var($data["terms"], FILTER_SANITIZE_STRIPPED);
-        $page = (filter_var($data["page"], FILTER_VALIDATE_INT) >= 1 ? $data["page"] : 1);
 
         $head = $this->seo->render(
             "Pesquisa por {$search} - " . CONF_SITE_NAME,
@@ -212,7 +212,7 @@ class Web extends Controller
             "{$post->title} - " . CONF_SITE_NAME,
             $post->subtitle,
             url("/blog/{$post->uri}"),
-            image($post->cover, 1200, 628)
+            ($post->cover ? image($post->cover, 1200, 628) : theme("/assets/images/share.jpg"))
         );
 
         echo $this->view->render("blog-post", [

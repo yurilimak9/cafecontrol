@@ -28,10 +28,8 @@ class Post extends Model
      */
     public function findPost(?string $terms = null, ?string $params = null, string $columns = "*"): Post
     {
-        if (!$this->all) {
-            $terms = "status = :status AND post_at <= NOW()" . ($terms ? " AND {$terms}" : "");
-            $params = "status=post" . ($params ? "&{$params}" : "");
-        }
+        $terms = "status = :status AND post_at <= NOW()" . ($terms ? " AND {$terms}" : "");
+        $params = "status=post" . ($params ? "&{$params}" : "");
 
         return parent::find($terms, $params, $columns);
     }
