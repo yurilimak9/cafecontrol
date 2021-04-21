@@ -152,13 +152,13 @@
                         <span class="legend">*Autor:</span>
                         <select name="author" required>
                             <?php foreach ($authors as $author):
-                                $authorId = $author->id;
+                                $authorId = $post->author;
                                 $select = function ($value) use ($authorId) {
                                     return ($authorId == $value ? "selected" : "");
                                 };
                                 ?>
-                                <option <?= $select($post->author); ?>
-                                        value="<?= $author->id; ?>"><?= $post->author()->fullName(); ?></option>
+                                <option <?= $select($author->id); ?>
+                                        value="<?= $author->id; ?>"><?= $author->fullName(); ?></option>
                             <?php endforeach; ?>
                         </select>
                     </label>
@@ -182,8 +182,8 @@
 
                     <label class="label">
                         <span class="legend">Data de publicação:</span>
-                        <input class="mask-datetime" type="text" name="post_at" value="<?= date_fmt($post->post_at, "d/m/Y H:i"); ?>"
-                               required/>
+                        <input class="mask-datetime" type="text" name="post_at"
+                               value="<?= date_fmt($post->post_at, "d/m/Y H:i"); ?>" required/>
                     </label>
                 </div>
 

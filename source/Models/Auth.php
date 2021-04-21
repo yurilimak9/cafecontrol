@@ -75,42 +75,36 @@ class Auth extends Model
     /**
      * @param string $email
      * @param string $password
-     * @param bool $save
      * @param int $level
-     * @return bool
+     * @return User|null
      */
-    public function login(string $email, string $password, bool $save = false, int $level = 1): bool
+    public function attempt(string $email, string $password, int $level = 1): ?User
     {
         if (!is_email($email)) {
             $this->message->warning("O e-mail informado não é válido");
-            return false;
-        }
-
-        if ($save) {
-            setcookie("authEmail", $email, time() + (60 * 60 * 24 * 7), "/");
-        } else {
-            setcookie("authEmail", null, time() - (60 * 60 * 24 * 7), "/");
+            return null;
         }
 
         if (!is_passwd($password)) {
             $this->message->warning("A senha informada não é válida");
-            return false;
+            return null;
         }
 
         $user = (new User())->findByEmail($email);
+
         if (!$user) {
             $this->message->error("O e-mail informado não está cadastrado");
-            return false;
+            return null;
         }
 
         if (!passwd_verify($password, $user->password)) {
             $this->message->error("A senha informada não confere");
-            return false;
+            return null;
         }
 
         if ($user->level < $level) {
             $this->message->error("Desculpe, mas você não tem permissão para logar-se aqui");
-            return false;
+            return null;
         }
 
         if (passwd_rehash($user->password)) {
@@ -118,10 +112,31 @@ class Auth extends Model
             $user->save();
         }
 
-        /** Login */
-        (new Session())->set("authUser", $user->id);
-        $this->message->success("Login efetuado com sucesso!")->flash();
+        return $user;
+    }
 
+    /**
+     * @param string $email
+     * @param string $password
+     * @param bool $save
+     * @param int $level
+     * @return bool
+     */
+    public function login(string $email, string $password, bool $save = false, int $level = 1): bool
+    {
+        $user = $this->attempt($email, $password, $level);
+        if (!$user) {
+            return false;
+        }
+
+        if ($save) {
+            setcookie("authEmail", $email, time() + 604800, "/");
+        } else {
+            setcookie("authEmail", null, time() - 3600, "/");
+        }
+
+        //LOGIN
+        (new Session())->set("authUser", $user->id);
         return true;
     }
 

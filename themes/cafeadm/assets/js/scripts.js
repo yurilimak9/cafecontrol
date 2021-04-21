@@ -31,7 +31,7 @@ $(function () {
             } else {
                 center.html("0");
             }
-        }, "json")
+        }, "json");
     }
 
     function notificationHtml(link, image, notify, date) {
@@ -56,18 +56,18 @@ $(function () {
     $(".notification_center_open").click(function (e) {
         e.preventDefault();
 
-        const notify = $(this).data("notify");
-        const center = $(".notification_center");
+        var notify = $(this).data("notify");
+        var center = $(".notification_center");
 
         $.post(notify, function (response) {
             if (response.message) {
                 ajaxMessage(response.message, ajaxResponseBaseTime);
             }
 
-            let centerHtml = "";
+            var centerHtml = "";
             if (response.notifications) {
                 $.each(response.notifications, function (e, notify) {
-                    centerHtml += notificationHtml(notify.link, notify.image, notify.title, notify.created_at)
+                    centerHtml += notificationHtml(notify.link, notify.image, notify.title, notify.created_at);
                 });
 
                 center.html(centerHtml);

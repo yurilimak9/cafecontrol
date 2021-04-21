@@ -35,6 +35,112 @@ class AppInvoice extends Model
 
     /**
      * @param User $user
+     * @param array $data
+     * @return $this|null
+     */
+    public function launch(User $user, array $data): ?AppInvoice
+    {
+        $data = filter_var_array($data, FILTER_SANITIZE_STRIPPED);
+
+        if (
+            empty($data["wallet_id"]) || empty($data["category_id"]) || empty($data["description"])
+            || empty($data["type"]) || empty($data["value"]) || empty($data["due_at"])
+            || empty($data["repeat_when"]) || empty($data["period"]) || empty($data["enrollments"])
+        ) {
+            $this->message->error("Faltam dados para lançar essa fatura");
+            return null;
+        }
+
+        $wallet = (new AppWallet())->find("user_id = :user_id AND id = :id",
+            "user_id={$user->id}&id={$data["wallet_id"]}")->fetch();
+
+        if (!$wallet) {
+            $this->message->error("A carteira que você informou não existe");
+            return null;
+        }
+
+        $category = (new AppCategory())->findById($data["category_id"]);
+        if (!$category) {
+            $this->message->error("A categoria que você informou não existe");
+            return null;
+        }
+
+        //PREMIUM RESOURCE
+        $subscribe = (new AppSubscription())->find("user_id = :user AND status != :status",
+            "user={$user->id}&status=canceled");
+
+        if (!$wallet->free && !$subscribe->count()) {
+            $this->message->error("É preciso assinar para lançar nesta carteira");
+            return null;
+        }
+
+        $typeList = ["income", "expense"];
+        if (!in_array($data["type"], $typeList)) {
+            $this->message->error("O tipo da fatura deve ser despesa ou receita");
+            return null;
+        }
+
+        $check = \DateTime::createFromFormat("Y-m-d", $data["due_at"]);
+        if (!$check || $check->format("Y-m-d") != $data["due_at"]) {
+            $this->message->error("O vencimento da fatura não tem um formato válido");
+            return null;
+        }
+
+        $repeatList = ["single", "enrollment", "fixed"];
+        if (!in_array($data["repeat_when"], $repeatList)) {
+            $this->message->error("A repetição da fatura deve ser única, parcelada ou fixa");
+            return null;
+        }
+
+        $periodList = ["month", "year"];
+        if (!in_array($data["period"], $periodList)) {
+            $this->message->error("O período de cobrança da fatura deve ser mensal ou anual");
+            return null;
+        }
+
+        if (!empty($data["enrollments"]) && ($data["enrollments"] < 1 || $data["enrollments"] > 420)) {
+            $this->message->error("O número de parcelas da fatura deve estar entre 1 e 420");
+            return null;
+        }
+
+        $status = (date($data["due_at"]) <= date("Y-m-d") ? "paid" : "unpaid");
+
+        $this->user_id = $user->id;
+        $this->wallet_id = $data["wallet_id"];
+        $this->category_id = $data["category_id"];
+        $this->invoice_of = null;
+        $this->description = $data["description"];
+        $this->type = ($data["repeat_when"] == "fixed" ? "fixed_{$data["type"]}" : $data["type"]);
+        $this->value = $data["value"];
+        $this->currency = "BRL";
+        $this->due_at = $data["due_at"];
+        $this->repeat_when = $data["repeat_when"];
+        $this->period = $data["period"];
+        $this->enrollments = $data["enrollments"];
+        $this->enrollment_of = 1;
+        $this->status = ($data["repeat_when"] == "fixed" ? "paid" : $status);
+
+        if (!$this->save()) {
+            return null;
+        }
+
+        if ($this->repeat_when == "enrollment") {
+            $invoiceOf = $this->id;
+            for ($enrollment = 1; $enrollment < $this->enrollments; $enrollment++) {
+                $this->id = null;
+                $this->invoice_of = $invoiceOf;
+                $this->due_at = date("Y-m-d", strtotime($data["due_at"] . "+{$enrollment}month"));
+                $this->status = (date($this->due_at) <= date("Y-m-d") ? "paid" : "unpaid");
+                $this->enrollment_of = $enrollment + 1;
+                $this->save();
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @param User $user
      * @param int $afterMonths
      * @throws \Exception
      */
@@ -113,6 +219,14 @@ class AppInvoice extends Model
         }
 
         return $due->fetch(true);
+    }
+
+    /**
+     * @return mixed|Model|null
+     */
+    public function wallet()
+    {
+        return (new AppWallet())->findById($this->wallet_id);
     }
 
     /**

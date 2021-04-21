@@ -32,7 +32,7 @@ class Blog extends Admin
     {
         /** Search Redirect */
         if (!empty($data["s"])) {
-            $s = filter_var($data["s"], FILTER_SANITIZE_STRIPPED);
+            $s = str_search($data["s"]);
 
             echo json_encode([
                 "redirect" => url("/admin/blog/home/{$s}/1")
@@ -43,8 +43,8 @@ class Blog extends Admin
         $search = null;
         $posts = (new Post())->find();
 
-        if (!empty($data["search"]) && $data["search"] != "all") {
-            $search = filter_var($data["search"], FILTER_SANITIZE_STRIPPED);
+        if (!empty($data["search"]) && str_search($data["search"]) != "all") {
+            $search = str_search($data["search"]);
             $posts = (new Post())->find("MATCH(title, subtitle) AGAINST(:s)", "s={$search}");
             if (!$posts->count()) {
                 $this->message->info("Sua pesquisa não retornou resultados")->flash();

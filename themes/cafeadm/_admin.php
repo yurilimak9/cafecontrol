@@ -71,10 +71,7 @@
                 </div>
             </div>
 
-            <div class="notification_center">
-
-            </div>
-
+            <div class="notification_center"></div>
         </div>
 
         <div class="dash_content_box">
