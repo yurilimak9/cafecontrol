@@ -24,7 +24,7 @@
         <div class="label_group">
             <label>
                 <span class="field icon-briefcase">Carteira:</span>
-                <select name="wallet">
+                <select name="wallet_id">
                     <?php foreach ($wallets as $wallet): ?>
                         <option value="<?= $wallet->id; ?>">&ofcir; <?= $wallet->wallet ?></option>
                     <?php endforeach; ?>
@@ -33,7 +33,7 @@
 
             <label>
                 <span class="field icon-filter">Categoria:</span>
-                <select name="category">
+                <select name="category_id">
                     <?php foreach ($categories as $category): ?>
                         <option value="<?= $category->id; ?>">&ofcir; <?= $category->name; ?></option>
                     <?php endforeach; ?>
@@ -70,7 +70,7 @@
         </label>
 
         <label class="repeate_item repeate_item_enrollment" style="display: none">
-            <input class="radius" type="number" min="2" max="420" placeholder="1 parcela" name="enrollments"/>
+            <input class="radius" type="number" value="1" min="1" max="420" placeholder="1 parcela" name="enrollments"/>
         </label>
 
         <button class="btn radius transition icon-check-square-o">

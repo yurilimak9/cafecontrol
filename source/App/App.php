@@ -383,78 +383,17 @@ class App extends Controller
             return;
         }
 
-        $wallet = (new AppWallet())->find(
-            "user_id = :user AND id = :id",
-            "user={$this->user->id}&id={$data["wallet"]}"
-        )->fetch();
+        $invoice = new AppInvoice();
 
-        if (!$wallet) {
-            $json["message"] = $this->message->warning("Ooops! Você tentou lançar em uma carteira que não existe ou está ídisponível no momento.")->render();
+        $data["value"] = (!empty($data["value"]) ? str_replace([".", ","], ["", "."], $data["value"]) : 0);
+        if (!$invoice->launch($this->user, $data)) {
+            $json["message"] = $invoice->message()->render();
             echo json_encode($json);
             return;
         }
 
-        /** PREMIUM RESOURCE */
-        $subscribe = (new AppSubscription())->find(
-            "user_id = :user AND status != :status",
-            "user={$this->user->id}&status=canceled"
-        );
-
-        if (!$wallet->free && !$subscribe->count()) {
-            $this->message->error("Sua carteira {$wallet->wallet} é PRO {$this->user->first_name}. Para controlá-la é preciso ser PRO. Assine abaixo...")->flash();
-            $json["redirect"] = url("/app/assinatura");
-            echo json_encode($json);
-            return;
-        }
-
-        if (!empty($data["enrollments"]) && $data["enrollments"] < 2 || $data["enrollments"] > 420) {
-            $json["message"] = $this->message->warning("Ooops {$this->user->first_name}! Para lançar o número de parcelas deve ser entre 2 e 420.")->render();
-            echo json_encode($json);
-            return;
-        }
-
-        $data = filter_var_array($data, FILTER_SANITIZE_STRIPPED);
-        $status = (date($data["due_at"]) <= date("Y-m-d") ? "paid" : "unpaid");
-
-        $invoice = (new AppInvoice());
-        $invoice->user_id = $this->user->id;
-        $invoice->wallet_id = $data["wallet"];
-        $invoice->category_id = $data["category"];
-        $invoice->invoice_of = null;
-        $invoice->description = $data["description"];
-        $invoice->type = ($data["repeat_when"] == "fixed" ? "fixed_{$data["type"]}" : $data["type"]);
-        $invoice->value = str_replace([".", ","], ["", "."], $data["value"]);
-        $invoice->currency = $data["currency"];
-        $invoice->due_at = $data["due_at"];
-        $invoice->repeat_when = $data["repeat_when"];
-        $invoice->period = (!empty($data["period"]) ? $data["period"] : "month");
-        $invoice->enrollments = (!empty($data["enrollments"]) ? $data["enrollments"] : 1);
-        $invoice->enrollment_of = 1;
-        $invoice->status = ($data["repeat_when"] == "fixed" ? "paid" : $status);
-
-        if (!$invoice->save()) {
-            $json["message"] = $invoice->message()->before("Ooops! ")->render();
-            echo json_encode($json);
-            return;
-        }
-
-        if ($invoice->repeat_when == "enrollment") {
-            $invoiceOf = $invoice->id;
-            for ($enrollment = 1; $enrollment < $invoice->enrollments; $enrollment++) {
-                $invoice->id = null;
-                $invoice->invoice_of = $invoiceOf;
-                $invoice->due_at = date("Y-m-d", strtotime($data["due_at"] . "+{$enrollment}month"));
-                $invoice->status = (date($invoice->due_at) <= date("Y-m-d") ? "paid" : "unpaid");
-                $invoice->enrollment_of = $enrollment + 1;
-                $invoice->save();
-            }
-        }
-
-        if ($invoice->type == "income") {
-            $this->message->success("Receita lançada com sucesso. Use o filtro para controlar.")->render();
-        } else {
-            $this->message->success("Despesa lançada com sucesso. Use o filtro para controlar")->render();
-        }
+        $type = ($invoice->type == "income" ? "receita" : "despesa");
+        $this->message->success("Tudo certo, sua {$type} foi lançada com sucesso")->flash();
 
         $json["reload"] = true;
         echo json_encode($json);
