@@ -16,13 +16,13 @@ use Source\Models\User;
  */
 class CafeApi extends Controller
 {
-    /** @var User */
+    /** @var User|null */
     protected $user;
 
-    /** @var  */
+    /** @var array|bool */
     protected $headers;
 
-    /** @var  */
+    /** @var array|null */
     protected $response;
 
     /**
@@ -35,6 +35,11 @@ class CafeApi extends Controller
 
         header('Content-Type: application/json; charset=UTF-8');
         $this->headers = getallheaders();
+
+        $request = $this->requestLimit("cafeApi", 1, 1);
+        if (!$request) {
+            exit;
+        }
 
         $auth = $this->auth();
         if (!$auth) {
@@ -85,8 +90,14 @@ class CafeApi extends Controller
     /**
      * @return bool
      */
-    protected function auth(): bool
+    private function auth(): bool
     {
+        $endpoint = ["cafeApiAuth", 3, 60];
+        $request = $this->requestLimit($endpoint[0], $endpoint[1], $endpoint[2], true);
+        if (!$request) {
+            return false;
+        }
+
         if (empty($this->headers["email"] || empty($this->headers["password"]))) {
             $this->call(
                 400,
@@ -102,6 +113,8 @@ class CafeApi extends Controller
         $user = $auth->attempt($this->headers["email"], $this->headers["password"], 1);
 
         if (!$user) {
+            $this->requestLimit($endpoint[0], $endpoint[1], $endpoint[2]);
+
             $this->call(
                 401,
                 "invalid_auth",
@@ -112,6 +125,83 @@ class CafeApi extends Controller
         }
 
         $this->user = $user;
+
+        return true;
+    }
+
+    /**
+     * @param string $endpoint
+     * @param int $limit
+     * @param int $seconds
+     * @param bool $attempt
+     * @return bool
+     */
+    protected function requestLimit(string $endpoint, int $limit, int $seconds, bool $attempt = false): bool
+    {
+        $userToken = (!empty($this->headers["email"]) ? base64_encode($this->headers["email"]) : null);
+
+        if (!$userToken) {
+            $this->call(
+                400,
+                "invalid_data",
+                "Você precisa informar seu e-mail e senha para continuar"
+            )->back();
+
+            return false;
+        }
+
+        $cacheDir = __DIR__ . "/../../../" . CONF_UPLOAD_DIR . "/requests";
+        if (!file_exists($cacheDir) || !is_dir($cacheDir)) {
+            mkdir($cacheDir, 0755);
+        }
+
+        $cacheFile = "{$cacheDir}/{$userToken}.json";
+        if (!file_exists($cacheFile) || !is_dir($cacheFile)) {
+            fopen($cacheFile, "w");
+        }
+
+        $userCache = json_decode(file_get_contents($cacheFile));
+        $cache[$endpoint] = (array)$userCache;
+
+        $save = function ($cacheFile, $cache) {
+            $saveCache = fopen($cacheFile, "w");
+            fwrite($saveCache, json_encode($cache, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+            fclose($saveCache);
+        };
+
+        if (empty($cache[$endpoint]) || $cache[$endpoint]->time <= time()) {
+            if (!$attempt) {
+                $cache[$endpoint] = [
+                    "limit" => $limit,
+                    "requests" => 1,
+                    "time" => time() + $seconds
+                ];
+
+                $save($cacheFile, $cache);
+            }
+
+            return true;
+        }
+
+        if ($cache[$endpoint]->requests >= $limit) {
+            $this->call(
+                400,
+                "request_limit",
+                "Você exedeu o limite de requisições para essa ação"
+            )->back();
+
+            return false;
+        }
+
+        if (!$attempt) {
+            $cache[$endpoint] = [
+                "limit" => $limit,
+                "requests" => $cache[$endpoint]->requests + 1,
+                "time" => $cache[$endpoint]->requests
+            ];
+
+            $save($cacheFile, $cache);
+        }
 
         return true;
     }
