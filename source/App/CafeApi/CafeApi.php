@@ -156,12 +156,13 @@ class CafeApi extends Controller
         }
 
         $cacheFile = "{$cacheDir}/{$userToken}.json";
-        if (!file_exists($cacheFile) || !is_dir($cacheFile)) {
+        if (!file_exists($cacheFile) || !is_file($cacheFile)) {
             fopen($cacheFile, "w");
         }
 
         $userCache = json_decode(file_get_contents($cacheFile));
-        $cache[$endpoint] = (array)$userCache;
+
+        $cache = (array)$userCache;
 
         $save = function ($cacheFile, $cache) {
             $saveCache = fopen($cacheFile, "w");
@@ -197,7 +198,7 @@ class CafeApi extends Controller
             $cache[$endpoint] = [
                 "limit" => $limit,
                 "requests" => $cache[$endpoint]->requests + 1,
-                "time" => $cache[$endpoint]->requests
+                "time" => $cache[$endpoint]->time
             ];
 
             $save($cacheFile, $cache);
