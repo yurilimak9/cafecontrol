@@ -4,11 +4,21 @@
 namespace Source\App\CafeApi;
 
 
+use Source\Models\CafeApp\AppCategory;
 use Source\Models\CafeApp\AppInvoice;
+use Source\Models\CafeApp\AppWallet;
 use Source\Support\Pager;
 
+/**
+ * Class Invoices
+ * @package Source\App\CafeApi
+ */
 class Invoices extends CafeApi
 {
+    /**
+     * Invoices constructor.
+     * @throws \Exception
+     */
     public function __construct()
     {
         parent::__construct();
@@ -72,23 +82,110 @@ class Invoices extends CafeApi
         $this->back($response);
     }
 
-    public function create(?array $data): void
+    /**
+     * @param array $data
+     * @throws \Exception
+     */
+    public function create(array $data): void
+    {
+        $request = $this->requestLimit("invoiceCreate", 5, 60);
+        if (!$request) {
+            return;
+        }
+
+        $invoice = new AppInvoice();
+        if (!$invoice->launch($this->user, $data)) {
+            $this->call(
+                400,
+                "invalid_data",
+                $invoice->message()->getText()
+            )->back();
+
+            return;
+        }
+
+        $invoice->fixed($this->user, 3);
+        $this->back(["invoice" => $invoice->data()]);
+    }
+
+    /**
+     * @param array $data
+     */
+    public function read(array $data): void
+    {
+        if (empty($data["invoice_id"]) || !$invoiceId = filter_var($data["invoice_id"], FILTER_VALIDATE_INT)) {
+            $this->call(
+                400,
+                "invalid_data",
+                "É preciso informar o ID da fatura que deseja consultar"
+            )->back();
+
+            return;
+        }
+        $invoice = (new AppInvoice())->find(
+            "user_id = :user AND id = :id",
+            "user={$this->user->id}&id={$invoiceId}"
+        )->fetch();
+        if (!$invoice) {
+            $this->call(
+                404,
+                "not_found",
+                "Você tentou acessar uma fatura que não existe ou já foi removida"
+            )->back();
+
+            return;
+        }
+
+        $response["invoice"] = $invoice->data();
+        $response["invoice"]->wallet = (new AppWallet())->findById($invoice->wallet_id)->data();
+        $response["invoice"]->category = (new AppCategory())->findById($invoice->category_id)->data();
+
+        $this->back($response);
+    }
+
+    /**
+     * @param array $data
+     */
+    public function update(array $data): void
     {
 
     }
 
-    public function read(?array $data): void
+    /**
+     * @param array $data
+     */
+    public function delete(array $data): void
     {
+        if (empty($data["invoice_id"]) || !$invoiceId = filter_var($data["invoice_id"], FILTER_VALIDATE_INT)) {
+            $this->call(
+                400,
+                "invalid_data",
+                "Informe o ID do lanaçamento que deseja deletar"
+            )->back();
 
-    }
+            return;
+        }
+        $invoice = (new AppInvoice())->find(
+            "user_id = :user AND id = :id",
+            "user={$this->user->id}&id={$invoiceId}"
+        )->fetch();
+        if (!$invoice) {
+            $this->call(
+                404,
+                "not_found",
+                "Você tentou excluir uma fatura que não existe"
+            )->back();
 
-    public function update(?array $data): void
-    {
+            return;
+        }
 
-    }
+        $invoice->destroy();
 
-    public function delete(?array $data): void
-    {
-
+        $this->call(
+            200,
+            "success",
+            "O lançamento foi excluído com sucesso",
+            "accepted"
+        )->back();
     }
 }
