@@ -148,7 +148,94 @@ class Invoices extends CafeApi
      */
     public function update(array $data): void
     {
+        $data = filter_var_array($data, FILTER_SANITIZE_STRIPPED);
+        if (empty($data["invoice_id"]) || !$invoiceId = filter_var($data["invoice_id"], FILTER_VALIDATE_INT)) {
+            $this->call(
+                400,
+                "invalid_data",
+                "Informe o ID do lançamento que deseja atualizar"
+            )->back();
 
+            return;
+        }
+
+        $invoice = (new AppInvoice())->find("user_id = :user AND id = :id", "user={$this->user->id}&id={$invoiceId}")->fetch();
+        if (!$invoice) {
+            $this->call(
+                404,
+                "not_found",
+                "Você tentou atualizar um lançamento que não existe"
+            )->back();
+
+            return;
+        }
+
+        if (!empty($data["wallet_id"]) && $walletId = filter_var($data["wallet_id"], FILTER_VALIDATE_INT)) {
+            $wallet = (new AppWallet())->find("user_id = :user AND id = :id", "user={$this->user->id}&id={$walletId}")->fetch();
+            if (!$wallet) {
+                $this->call(
+                    400,
+                    "invalid_data",
+                    "Você informou uma carteira que não existe"
+                )->back();
+
+                return;
+            }
+        }
+
+        if (!empty($data["category_id"]) && $categoryId = filter_var($data["category_id"], FILTER_VALIDATE_INT)) {
+            $category = (new AppCategory())->findById($categoryId);
+            if (!$categoryId) {
+                $this->call(
+                    400,
+                    "invalid_data",
+                    "Você informou uma categoria que não existe"
+                )->back();
+
+                return;
+            }
+        }
+
+        if (!empty($data["due_day"]) && ($data["due_day"] < 1 || $data["due_day"] > 28)) {
+            $this->call(
+                400,
+                "invalid_data",
+                "O dia de vencimento deve estar entre 1 e 28"
+            )->back();
+
+            return;
+        }
+
+        $dueAt = date("Y-m", strtotime($invoice->due_at)) . "-" . $data["due_day"];
+        $statusList = ["paid", "unpaid"];
+        if (!empty($data["status"]) && !in_array($data["status"], $statusList)) {
+            $this->call(
+                400,
+                "invalid_data",
+                "O status do lançamento deve ser pago ou não pago"
+            )->back();
+
+            return;
+        }
+
+        $invoice->wallet_id = (!empty($data["wallet_id"]) ? $data["wallet_id"] : $invoice->wallet_id);
+        $invoice->category_id = (!empty($data["category_id"]) ? $data["category_id"] : $invoice->category_id);
+        $invoice->description = (!empty($data["description"]) ? $data["description"] : $invoice->description);
+        $invoice->value = (!empty($data["value"]) ? $data["value"] : $invoice->value);
+        $invoice->due_at = (!empty($dueAt) ? date("Y-m-d", strtotime($dueAt)) : $invoice->due_at);
+        $invoice->status = (!empty($data["status"]) ? $data["status"] : $invoice->status);
+
+        if (!$invoice->save()) {
+            $this->call(
+                400,
+                "invalid_data",
+                $invoice->message()->getText()
+            )->back();
+
+            return;
+        }
+
+        $this->back(["invoice" => $invoice->data()]);
     }
 
     /**
