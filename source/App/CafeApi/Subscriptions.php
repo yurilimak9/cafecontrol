@@ -59,7 +59,7 @@ class Subscriptions extends CafeApi
      */
     public function create(array $data): void
     {
-        $request = $this->requestLimit("subscriptionsCreate", 3, 60);
+        $request = $this->requestLimit("subscriptionsCreate", 3, 60 * 5);
         if (!$request) {
             return;
         }
@@ -71,7 +71,7 @@ class Subscriptions extends CafeApi
             $this->call(
                 403,
                 "invalid_request",
-                "Você não pode assinar pois já tem um plano ativo"
+                "Você não pode assinar, pois já tem um plano ativo"
             )->back();
             return;
         }
@@ -168,7 +168,7 @@ class Subscriptions extends CafeApi
      */
     public function update(array $data)
     {
-        $request = $this->requestLimit("subscriptionsUpdate", 3, 60);
+        $request = $this->requestLimit("subscriptionsUpdate", 3, 60 * 5);
         if (!$request) {
             return;
         }
